@@ -87,8 +87,8 @@ const Calendar = ({ events, onAddEvent, onDateSelect }) => {
               <div className="date-number">{format(day, dateFormat)}</div>
               <div className="event-indicators">
                 {dayEvents.slice(0, 3).map((event, idx) => (
-                  <div key={idx} className="event-badge" style={{ backgroundColor: event.color || 'var(--accent-color)' }}>
-                    {event.title}
+                  <div key={idx} className="event-badge event-dot" style={{ backgroundColor: event.color || 'var(--accent-color)' }}>
+                    <span className="event-title-text">{event.title}</span>
                   </div>
                 ))}
                 {dayEvents.length > 3 && (

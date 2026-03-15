@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Bell } from 'lucide-react';
+import { PartyPopper as ConfettiIcon, Bell, Trash2 } from 'lucide-react';
 import Calendar from './components/Calendar';
 import EventModal from './components/EventModal';
 import NotificationToast from './components/NotificationToast';
+import Tabs from './components/Tabs';
+import MoviesTab from './components/MoviesTab';
 import { supabase } from './lib/supabase';
 
 function App() {
+  const [activeTab, setActiveTab] = useState('events');
+
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
-  
+
   // Notification states
   const [notifications, setNotifications] = useState([]);
   const [notificationPermission, setNotificationPermission] = useState('default');
@@ -48,9 +52,32 @@ function App() {
     setIsModalOpen(true);
   };
 
+  const handleDeleteEvent = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) {
+      return;
+    }
+
+    try {
+      // Optimistic upate
+      setEvents(prev => prev.filter(e => e.id !== id));
+
+      const { error: supabaseError } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', id);
+
+      if (supabaseError) throw supabaseError;
+
+    } catch (err) {
+      console.error('Error deleting event:', err);
+      alert("Failed to delete event.");
+      fetchEvents(); // revert
+    }
+  };
+
   const handleSaveEvent = async (newEvent) => {
     try {
-      // Optimistically update UI (optional, but good for UX. We await the actual insert to be safe here though)
+      // Optimistically update UI
       const { data, error: supabaseError } = await supabase
         .from('events')
         .insert([
@@ -69,7 +96,7 @@ function App() {
 
       if (data && data.length > 0) {
         setEvents([...events, data[0]]);
-        
+
         // Notify success
         const id = Date.now();
         setNotifications(prev => [...prev, {
@@ -124,9 +151,9 @@ function App() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  // Get upcoming events for the dashboard
+  // Get upcoming events for the dashboard and list
   const upcomingEvents = events
-    .filter(e => new Date(e.date) >= new Date(new Date().setHours(0,0,0,0)))
+    .filter(e => new Date(e.date) >= new Date(new Date().setHours(0, 0, 0, 0)))
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   return (
@@ -135,59 +162,89 @@ function App() {
         <div className="container header-content">
           <div className="logo-container">
             <div className="logo-icon-wrapper">
-              <CalendarIcon size={24} className="logo-icon" />
+              <ConfettiIcon size={24} className="logo-icon" />
             </div>
-            <h1 className="logo-text text-gradient">Gatherings</h1>
+            <h1 className="logo-text text-gradient">Maa Lokam</h1>
           </div>
           <nav className="header-actions">
-            <button 
-              className={`btn-icon ${notificationPermission === 'granted' ? 'active-bell' : ''}`} 
+            <button
+              className={`btn-icon ${notificationPermission === 'granted' ? 'active-bell' : ''}`}
               aria-label="Notifications"
               onClick={requestNotificationPermission}
               style={{ color: notificationPermission === 'granted' ? 'var(--accent-color)' : 'var(--text-secondary)' }}
             >
               <Bell size={20} />
             </button>
-            <button className="glass-btn" onClick={() => handleAddEventClick()}>
-              New Event
-            </button>
           </nav>
         </div>
       </header>
-      
+
       <main className="container main-content">
-        <section className="dashboard-content">
-          <div className="welcome-banner glass-panel">
-            <h2>Welcome back!</h2>
-            {isLoading ? (
-               <p className="subtitle">Loading your events...</p>
-            ) : error ? (
-               <p className="subtitle" style={{color: 'var(--accent-color)'}}>{error}</p>
-            ) : (
-              <p className="subtitle">
-                You have {upcomingEvents.length} upcoming event{upcomingEvents.length !== 1 ? 's' : ''}.
-              </p>
+        <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+        {activeTab === 'events' ? (
+          <section className="dashboard-content">
+            <div className="welcome-banner glass-panel">
+              <h2>Welcome back!</h2>
+              {isLoading ? (
+                <p className="subtitle">Loading your events...</p>
+              ) : error ? (
+                <p className="subtitle" style={{ color: 'var(--accent-color)' }}>{error}</p>
+              ) : (
+                <p className="subtitle">
+                  You have {upcomingEvents.length} upcoming event{upcomingEvents.length !== 1 ? 's' : ''}.
+                </p>
+              )}
+            </div>
+
+            <div className="calendar-section glass-panel" style={{ opacity: isLoading ? 0.7 : 1, transition: 'opacity 0.3s' }}>
+              <Calendar
+                events={events}
+                onAddEvent={handleAddEventClick}
+                onDateSelect={handleDateSelect}
+              />
+            </div>
+
+            {/* Manage Upcoming Events List */}
+            {upcomingEvents.length > 0 && (
+              <div className="manage-events-section glass-panel" style={{ padding: '1.5rem', marginTop: '1rem' }}>
+                <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>Upcoming Events</h3>
+                <div className="event-list">
+                  {upcomingEvents.map(event => (
+                    <div key={event.id} className="event-list-item">
+                      <div className="event-list-details">
+                        <span className="event-list-title" style={{ color: event.color || 'var(--text-primary)' }}>{event.title}</span>
+                        <span className="event-list-date">
+                          {new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {new Date(event.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleDeleteEvent(event.id)}
+                        aria-label="Delete Event"
+                      >
+                        <Trash2 size={16} /> Delete
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
-          
-          <div className="calendar-section glass-panel" style={{ opacity: isLoading ? 0.7 : 1, transition: 'opacity 0.3s' }}>
-            <Calendar 
-              events={events} 
-              onAddEvent={handleAddEventClick}
-              onDateSelect={handleDateSelect}
-            />
-          </div>
-        </section>
+          </section>
+        ) : (
+          <MoviesTab />
+        )}
       </main>
 
-      <EventModal 
+      {/* Only render modals if we are on the events tab */}
+      <EventModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveEvent}
         initialDate={selectedDate}
       />
-      
-      <NotificationToast 
+
+      <NotificationToast
         notifications={notifications}
         onDismiss={dismissNotification}
       />

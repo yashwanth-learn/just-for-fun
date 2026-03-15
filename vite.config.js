@@ -12,9 +12,9 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       },
       manifest: {
-        name: 'Friend Events Calendar',
-        short_name: 'Gatherings',
-        description: 'Responsive event calendar for a group to manage gatherings',
+        name: 'Ma-lokam Events & Movies',
+        short_name: 'Ma-lokam',
+        description: 'Responsive event calendar and movie wishlist for friends',
         theme_color: '#0b0914',
         background_color: '#0b0914',
         display: 'standalone',

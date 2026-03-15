@@ -143,12 +143,53 @@
 }
 
 /* Responsiveness */
+/* Responsiveness */
 @media (max-width: 768px) {
   .cell {
-    min-height: 80px;
-    padding: 0.25rem;
+    min-height: 40px;
+    padding: 0.15rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
   }
   
+  .date-number {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+    align-self: center; /* Center the date number on small cells */
+  }
+
+  .cell.today .date-number {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .event-indicators {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px;
+    padding-bottom: 4px; /* Ensure dots have some space from the bottom */
+  }
+  
+  .event-title-text {
+    display: none; /* Hide the text on mobile */
+  }
+
+  .event-badge {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    padding: 0;
+    margin: 0;
+    min-width: 0; /* Remove any padding/min-width applied for text */
+    flex-shrink: 0;
+  }
+
+  .event-badge-more {
+    display: none; /* Hide the "+X more" text on very small screens, or render as a gray dot */
+  }
+
   .calendar-header {
     flex-direction: column;
     align-items: stretch;
@@ -160,10 +201,5 @@
   
   .calendar-actions {
     justify-content: center;
-  }
-  
-  .event-badge {
-    font-size: 0.6rem;
-    padding: 2px 4px;
   }
 }
