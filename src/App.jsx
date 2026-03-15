@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PartyPopper as ConfettiIcon, Bell, Trash2 } from 'lucide-react';
+import { PartyPopper as ConfettiIcon, Bell, Trash2, Download } from 'lucide-react';
 import Calendar from './components/Calendar';
 import EventModal from './components/EventModal';
 import NotificationToast from './components/NotificationToast';
@@ -20,6 +20,41 @@ function App() {
   // Notification states
   const [notifications, setNotifications] = useState([]);
   const [notificationPermission, setNotificationPermission] = useState('default');
+
+  // PWA Install State
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    // Listen for the event that allows us to prompt for installation
+    const handleBeforeInstallPrompt = (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+      console.log('beforeinstallprompt event captured');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      return;
+    }
+    // Show the install prompt
+    deferredPrompt.prompt();
+
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+
+    // We've used the prompt, and can't use it again, throw it away
+    setDeferredPrompt(null);
+  };
 
   // Fetch events from Supabase on mount
   useEffect(() => {
@@ -167,6 +202,16 @@ function App() {
             <h1 className="logo-text text-gradient">Maa Lokam</h1>
           </div>
           <nav className="header-actions">
+            {deferredPrompt && (
+              <button
+                className="btn-install"
+                onClick={handleInstallClick}
+                aria-label="Install App"
+              >
+                <Download size={16} />
+                <span className="install-text">App</span>
+              </button>
+            )}
             <button
               className={`btn-icon ${notificationPermission === 'granted' ? 'active-bell' : ''}`}
               aria-label="Notifications"

@@ -191,6 +191,36 @@ p {
   gap: 1rem;
 }
 
+.btn-install {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.btn-install:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+@media (max-width: 480px) {
+  .install-text {
+    display: none;
+  }
+  .btn-install {
+    padding: 0.5rem;
+  }
+}
+
 .main-content {
   flex: 1;
   padding-top: 2rem;
