@@ -5,6 +5,7 @@ import EventModal from './components/EventModal';
 import NotificationToast from './components/NotificationToast';
 import Tabs from './components/Tabs';
 import MoviesTab from './components/MoviesTab';
+import CocktailsTab from './components/CocktailsTab';
 import { supabase } from './lib/supabase';
 
 function App() {
@@ -113,21 +114,29 @@ function App() {
       return;
     }
 
+    // Store previous state for rollback
+    const previousEvents = [...events];
+
     try {
-      // Optimistic upate
+      // Optimistic update
       setEvents(prev => prev.filter(e => e.id !== id));
 
-      const { error: supabaseError } = await supabase
+      const { error: supabaseError, status } = await supabase
         .from('events')
         .delete()
         .eq('id', id);
 
-      if (supabaseError) throw supabaseError;
+      if (supabaseError) {
+        console.error('Supabase delete error:', supabaseError);
+        throw supabaseError;
+      }
+
+      console.log('Event deleted successfully, status:', status);
 
     } catch (err) {
       console.error('Error deleting event:', err);
-      alert("Failed to delete event.");
-      fetchEvents(); // revert
+      alert("Failed to delete event. Make sure the DELETE RLS policy is enabled in Supabase.");
+      setEvents(previousEvents); // restore from saved copy
     }
   };
 
@@ -297,9 +306,11 @@ function App() {
               </div>
             )}
           </section>
-        ) : (
+        ) : activeTab === 'movies' ? (
           <MoviesTab />
-        )}
+        ) : activeTab === 'cocktails' ? (
+          <CocktailsTab />
+        ) : null}
       </main>
 
       {/* Only render modals if we are on the events tab */}

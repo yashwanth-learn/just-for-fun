@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Film } from 'lucide-react';
+import { Calendar, Film, Wine } from 'lucide-react';
 
 const Tabs = ({ activeTab, onTabChange }) => {
   return (
@@ -16,7 +16,14 @@ const Tabs = ({ activeTab, onTabChange }) => {
         onClick={() => onTabChange('movies')}
       >
         <Film size={18} />
-        Movies Wishlist
+        Movies
+      </button>
+      <button 
+        className={`tab-btn ${activeTab === 'cocktails' ? 'active' : ''}`}
+        onClick={() => onTabChange('cocktails')}
+      >
+        <Wine size={18} />
+        Cocktails
       </button>
     </div>
   );

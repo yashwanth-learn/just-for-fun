@@ -10,8 +10,6 @@ const MoviesTab = () => {
 
   // Form state
   const [selectedMovie, setSelectedMovie] = useState(null);
-  const [suggestedBy, setSuggestedBy] = useState('');
-  const [notes, setNotes] = useState('');
 
   const [isLoadingWishlist, setIsLoadingWishlist] = useState(true);
   const [isLoadingUpcoming, setIsLoadingUpcoming] = useState(true);
@@ -88,8 +86,8 @@ const MoviesTab = () => {
         .from('movies')
         .insert([{
           title: selectedMovie.title,
-          suggested_by: suggestedBy,
-          notes,
+          suggested_by: '',
+          notes: '',
           votes: 1,
           poster_path: selectedMovie.poster_path,
           director: selectedMovie.director
@@ -101,8 +99,6 @@ const MoviesTab = () => {
       if (data && data.length > 0) {
         setWishlist(prev => [data[0], ...prev].sort((a, b) => b.votes - a.votes));
         setSelectedMovie(null);
-        setSuggestedBy('');
-        setNotes('');
       }
     } catch (err) {
       console.error('Error suggesting movie:', err);
@@ -152,34 +148,14 @@ const MoviesTab = () => {
 
       {/* Top Section: Movie Wishlist Form & List */}
       <section className="dashboard-content">
-        <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-          <div className="movies-section-header">
-            <h2>Suggest a Movie</h2>
-          </div>
-
-          <form onSubmit={handleSuggestMovie} style={{ display: 'grid', gap: '1rem' }}>
-            <div className="form-row-custom">
+        <div className="wishlist-add-bar glass-panel">
+          <form onSubmit={handleSuggestMovie} className="wishlist-add-form">
               <MovieAutocomplete
                 onSelect={(movie) => setSelectedMovie(movie)}
                 placeholder="Search for a movie..."
               />
-              <input
-                type="text"
-                placeholder="Suggested By (Your Name)"
-                value={suggestedBy}
-                onChange={e => setSuggestedBy(e.target.value)}
-                className="glass-input"
-              />
-            </div>
-            <textarea
-              placeholder="Why should we watch this? (Optional)"
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              className="glass-input"
-              rows={2}
-            />
-            <button type="submit" className="btn-primary" style={{ justifySelf: 'start' }}>
-              Add to Wishlist
+            <button type="submit" className="btn-primary wishlist-add-btn">
+              + Add
             </button>
           </form>
         </div>

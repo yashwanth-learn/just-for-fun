@@ -370,6 +370,40 @@ p {
   }
 }
 
+/* Wishlist Add Bar */
+.wishlist-add-bar {
+  padding: 0.75rem !important;
+  margin-bottom: 1.5rem;
+}
+
+.wishlist-add-form {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.wishlist-add-form .autocomplete-wrapper {
+  flex: 1;
+}
+
+.wishlist-add-btn {
+  white-space: nowrap;
+  padding: 0.65rem 1.25rem !important;
+  border-radius: 50px !important;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .wishlist-add-form {
+    flex-direction: column;
+  }
+  
+  .wishlist-add-btn {
+    width: 100%;
+  }
+}
+
 /* Autocomplete Component Styles */
 .autocomplete-wrapper {
   position: relative;
@@ -382,12 +416,12 @@ p {
 }
 
 .search-input {
-  padding-right: 2.5rem;
+  padding-left: 2.5rem;
 }
 
 .search-icon-wrapper {
   position: absolute;
-  right: 1rem;
+  left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
@@ -741,3 +775,243 @@ p {
   align-items: center;
   gap: 4px;
 }
+
+/* ============================
+   Cocktails – Flip Cards
+   ============================ */
+.cocktails-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.cocktail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Flip Card Container */
+.flip-card {
+  perspective: 1200px;
+  aspect-ratio: 3 / 4.5;
+  cursor: pointer;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+/* Front Face */
+.cocktail-image-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cocktail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.flip-card:hover .cocktail-image {
+  transform: scale(1.05);
+}
+
+.cocktail-image-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.6rem 0.75rem;
+  background: linear-gradient(transparent, rgba(0,0,0,0.65));
+  display: flex;
+  justify-content: flex-end;
+}
+
+.flip-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.75);
+  background: rgba(0,0,0,0.35);
+  padding: 0.2rem 0.5rem;
+  border-radius: 50px;
+  backdrop-filter: blur(4px);
+}
+
+.cocktail-front-info {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.cocktail-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.cocktail-category {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ingredient-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+
+.ingredient-chip {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 50px;
+  background: rgba(139, 92, 246, 0.15);
+  color: rgba(139, 92, 246, 0.9);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  white-space: nowrap;
+}
+
+.ingredient-more {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-secondary);
+  border-color: rgba(255,255,255,0.1);
+}
+
+/* Back Face */
+.cocktail-back-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.flip-hint-back {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.cocktail-ingredients-full h4,
+.cocktail-instructions h4 {
+  font-size: 0.8rem;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.4rem;
+}
+
+.cocktail-ingredients-full ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2rem;
+}
+
+.cocktail-ingredients-full li {
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  padding: 0.1rem 0;
+}
+
+.ing-measure {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.cocktail-instructions p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Hide scrollbar on back face */
+.flip-card-back::-webkit-scrollbar {
+  width: 3px;
+}
+.flip-card-back::-webkit-scrollbar-track {
+  background: transparent;
+}
+.flip-card-back::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cocktail-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .cocktail-name {
+    font-size: 0.9rem;
+  }
+  
+  .cocktail-front-info {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .ingredient-chip {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .cocktail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
