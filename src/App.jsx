@@ -3,13 +3,12 @@ import { Calendar as CalendarIcon, Bell } from 'lucide-react';
 import Calendar from './components/Calendar';
 import EventModal from './components/EventModal';
 import NotificationToast from './components/NotificationToast';
+import { supabase } from './lib/supabase';
 
 function App() {
-  // Initialize events from local storage, or default to an empty array
-  const [events, setEvents] = useState(() => {
-    const saved = localStorage.getItem('pwa_events');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [events, setEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -18,18 +17,79 @@ function App() {
   const [notifications, setNotifications] = useState([]);
   const [notificationPermission, setNotificationPermission] = useState('default');
 
-  // Sync events to local storage whenever they change
+  // Fetch events from Supabase on mount
   useEffect(() => {
-    localStorage.setItem('pwa_events', JSON.stringify(events));
-  }, [events]);
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const { data, error: supabaseError } = await supabase
+        .from('events')
+        .select('*');
+
+      if (supabaseError) {
+        throw supabaseError;
+      }
+
+      setEvents(data || []);
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError('Failed to load events. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAddEventClick = (date = new Date()) => {
     setSelectedDate(date);
     setIsModalOpen(true);
   };
 
-  const handleSaveEvent = (newEvent) => {
-    setEvents([...events, newEvent]);
+  const handleSaveEvent = async (newEvent) => {
+    try {
+      // Optimistically update UI (optional, but good for UX. We await the actual insert to be safe here though)
+      const { data, error: supabaseError } = await supabase
+        .from('events')
+        .insert([
+          {
+            title: newEvent.title,
+            date: newEvent.date,
+            description: newEvent.description,
+            color: newEvent.color
+          }
+        ])
+        .select();
+
+      if (supabaseError) {
+        throw supabaseError;
+      }
+
+      if (data && data.length > 0) {
+        setEvents([...events, data[0]]);
+        
+        // Notify success
+        const id = Date.now();
+        setNotifications(prev => [...prev, {
+          id,
+          title: 'Success!',
+          message: 'Event saved successfully.'
+        }]);
+        setTimeout(() => dismissNotification(id), 3000);
+      }
+    } catch (err) {
+      console.error('Error saving event:', err);
+      // Notify error
+      const id = Date.now();
+      setNotifications(prev => [...prev, {
+        id,
+        title: 'Error',
+        message: 'Failed to save event. Please try again.'
+      }]);
+      setTimeout(() => dismissNotification(id), 5000);
+    }
   };
 
   const handleDateSelect = (date) => {
@@ -99,12 +159,18 @@ function App() {
         <section className="dashboard-content">
           <div className="welcome-banner glass-panel">
             <h2>Welcome back!</h2>
-            <p className="subtitle">
-              You have {upcomingEvents.length} upcoming event{upcomingEvents.length !== 1 ? 's' : ''}.
-            </p>
+            {isLoading ? (
+               <p className="subtitle">Loading your events...</p>
+            ) : error ? (
+               <p className="subtitle" style={{color: 'var(--accent-color)'}}>{error}</p>
+            ) : (
+              <p className="subtitle">
+                You have {upcomingEvents.length} upcoming event{upcomingEvents.length !== 1 ? 's' : ''}.
+              </p>
+            )}
           </div>
           
-          <div className="calendar-section glass-panel">
+          <div className="calendar-section glass-panel" style={{ opacity: isLoading ? 0.7 : 1, transition: 'opacity 0.3s' }}>
             <Calendar 
               events={events} 
               onAddEvent={handleAddEventClick}
