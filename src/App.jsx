@@ -23,13 +23,22 @@ function App() {
 
   // PWA Install State
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
-    // Listen for the event that allows us to prompt for installation
+    // Detect iOS
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
+    setIsIOS(isIosDevice);
+
+    // Detect if already installed/running in standalone
+    const isRunningStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    setIsStandalone(isRunningStandalone);
+
+    // Listen for the event that allows us to prompt for installation (Android/Desktop)
     const handleBeforeInstallPrompt = (e) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e);
       console.log('beforeinstallprompt event captured');
     };
@@ -42,6 +51,18 @@ function App() {
   }, []);
 
   const handleInstallClick = async () => {
+    if (isIOS) {
+       // Force a toast notification showing how to install on iOS
+       const id = Date.now();
+       setNotifications(prev => [...prev, {
+         id,
+         title: 'Install App',
+         message: 'Tap the Share icon (box with an arrow) below, then select "Add to Home Screen".'
+       }]);
+       setTimeout(() => dismissNotification(id), 8000);
+       return;
+    }
+
     if (!deferredPrompt) {
       return;
     }
@@ -202,7 +223,7 @@ function App() {
             <h1 className="logo-text text-gradient">Maa Lokam</h1>
           </div>
           <nav className="header-actions">
-            {deferredPrompt && (
+            {(deferredPrompt || (isIOS && !isStandalone)) && (
               <button
                 className="btn-install"
                 onClick={handleInstallClick}
